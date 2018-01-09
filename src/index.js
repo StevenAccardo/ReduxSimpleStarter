@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import YTSearch from 'youtube-api-search';
@@ -24,19 +25,27 @@ class App extends Component {
      };
 
     //Putting the search function in the constructor, so that as soon as the App component runs, the YTSearch will happen, and the user will see some videos on the screen instead of a blank display.
-    YTSearch({key: API_KEY, term: 'surfboards'}, (videos) => {
-      this.setState({
-        videos: videos,
-        selectedVideo: videos[0]
-      });
-    });
+    //The YTSearch was moved into a function, but if it were still here, it would happen as soon as the index.js was loaded. Instead, we are now just calling the function in the constructor.
+    this.videoSearch('surfboards');
+
   }
 
+videoSearch(term) {
+  YTSearch({key: API_KEY, term: term}, (videos) => {
+    this.setState({
+      videos: videos,
+      selectedVideo: videos[0]
+    });
+  });
+}
 
   render() {
+    const videoSearch = _.debounce({term}) => { this.videoSearch(term) }, 300);
+
+
     return (
       <div>
-        <SearchBar />
+        <SearchBar onSearchTermChange={term => this.videoSearch(term)} />
         <VideoDetail video={this.state.selectedVideo} />
         <VideoList
           onVideoSelect={ selectedVideo => this.setState({selectedVideo}) }
